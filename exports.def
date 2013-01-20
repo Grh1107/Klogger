@@ -1,0 +1,12 @@
+LIBRARY hooks
+EXPORTS
+ 
+ CBTProc
+ FillHandleArray
+ SetHandle
+ UnSubclass
+
+ SECTIONS
+
+  Shared READ WRITE SHARED
+  Shared1 READ WRITE SHARED
