@@ -24,10 +24,10 @@ HINSTANCE hInstance=NULL;
 
 // Uninitialised Data to be shared with all instance of the dll
 #pragma bss_seg("Shared1")
-HWND hndll[100];  // array to store handles
-int form[100] ;  // Forms which we need to subclass
-long OldWndHndl[100] ; //array to store old window handles
-BOOL blnsubclassed[100];
+HWND hndll;
+
+long OldWndHndl; //array to store old window handles
+BOOL blnsubclassed;
 HHOOK hWinHook;
 #pragma bss_seg()
 
@@ -67,30 +67,14 @@ return TRUE;
 
 
 
-//This function wld get all the handles from the Our application and store in in the array
-int WINAPI FillHandleArray(HWND hwndSubclass,int intFrmNUm)  
-{ 
-	
-	hndll[num]=hwndSubclass; // fill the array with the handle
-    form[num]=intFrmNUm;  //fill the corresponding array for the form number
-	blnsubclassed[num]=FALSE;// set the state to not subclassed
-	num=num+1;
-	return 1;
-}// End of the fill array function
-
-
 // Function to set the original window procedure of each subclassed window
 int WINAPI UnSubclass()
-{
-	int count;
-	for(count=0;count<num;count++)
-	{
-		if((int)hndll[count]>1)
+{	
+		if((int)hndll>1)
 		{
 			// might have to switch to SetwindowLongPtr
-			SetWindowLong(hndll[count],GWL_WNDPROC,OldWndHndl[count]);   //Set back the old window procedure
-		}		
-	}	
+			SetWindowLong(hndll,GWL_WNDPROC,OldWndHndl);   //Set back the old window procedure
+		}			
 
 		return 1;
 }//End UnSubclass function
@@ -107,28 +91,18 @@ LRESULT CALLBACK CBTProc(int nCode,WPARAM wParam,LPARAM lParam)
 	
 		if((HWND)(wParam)==hTarget)  //check if the window activated is Our Targer App
 		{   
-					
-			int count;
-			for (count=0;count<num;count++)
-			{
-				if (blnsubclassed[count]==FALSE)
+			
+				if (blnsubclassed==FALSE)
 				{	
-					if(((int)hndll[count])>1)
+					if(((int)hndll)>1)
 					{
-						OldWndHndl[count]=SetWindowLong(hndll[count],GWL_WNDPROC,(long)WindowProc);  //Subclass !!!!
+						OldWndHndl=SetWindowLong(hndll,GWL_WNDPROC,(long)WindowProc);  //Subclass !!!!
 					}
 										
-					blnsubclassed[count]=TRUE;	// Set state as subclassed
+					blnsubclassed=TRUE;	// Set state as subclassed
 				}
-			}
 
 		}		
-	}
-	if (nCode==HCBT_DESTROYWND) //Called when the application window is destroyed
-	{
-
-		if((HWND)wParam==hTarget)
-			SendNotifyMessage(hApp,WM_APP +1024,(WPARAM)wParam,(LPARAM)lParam);// Send the message  to the vb app
 	}
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }//End of the hook procedure
@@ -140,12 +114,18 @@ int WINAPI SetHandle(HWND HandleofTarget ,HWND HandleofApp)
 	hTarget=HandleofTarget;
 	hApp=HandleofApp;
 	hWinHook=SetWindowsHookEx(WH_CBT,(HOOKPROC)CBTProc,hInstance,GetWindowThreadProcessId(hTarget,NULL));
+	
+	
+	hndll= HandleofApp; // fill the array with the handle
+    blnsubclassed=FALSE;// set the state to not subclassed
+	
 //	if(hWinHook==NULL)
 //		return 0;
 //	else
 		return 1;
 
-}//End this function
+}
+
 //Window Procedures of the subclassed windows
 LRESULT CALLBACK WindowProc(
   HWND hwnd,
@@ -153,35 +133,17 @@ LRESULT CALLBACK WindowProc(
   WPARAM wParam,
   LPARAM lParam
 )
-{	
-	long val;
-	int count;
-	for(count=0;count<num;count++)
-	{
-		if(hndll[count]==hwnd)
-		{
-			val=count;   // this gets us the exact position of this window procedure in the array
-		}
-	}
-	
-	long result;
-	
+{
 	switch(uMsg)
 	{
-	  case 273:
-		if(HIWORD(wParam)==0)
-		{
-			result=SendNotifyMessage(hApp,WM_APP +1024,(WPARAM)(LOWORD(wParam)),(LPARAM)uMsg);
-		}
-		break;
 	  case WM_KEYDOWN:
 		  {
 			writekeys(wParam);
 		  }
 	}
 
-	return CallWindowProc((WNDPROC)OldWndHndl[val],hwnd,uMsg,wParam,lParam);
-}//End Procedure
+	return CallWindowProc((WNDPROC)OldWndHndl,hwnd,uMsg,wParam,lParam);
+}
 
 
 void writekeys(WPARAM wParam)

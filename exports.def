@@ -2,7 +2,6 @@ LIBRARY hooks
 EXPORTS
  
  CBTProc
- FillHandleArray
  SetHandle
  UnSubclass
 

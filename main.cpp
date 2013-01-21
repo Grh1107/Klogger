@@ -126,34 +126,6 @@ LRESULT WINAPI WndProc(HWND hwnd,UINT msg2 ,WPARAM w_param,LPARAM l_param)
 				break;
 			}
 		
-		case WM_APP +1024:
-			{
-				
-				if(w_param==125)
-				{
-
-					SendKeys("<HTML>");
-					SendReturnKey(2);
-					SendKeys("<BODY>");
-					SendReturnKey(3);
-					SendKeys("<HEAD>");
-					SendReturnKey(2);
-					SendKeys("</HEAD>");
-					SendReturnKey(10);
-					SendKeys("</BODY>");
-					SendReturnKey(2);
-					SendKeys("</HTML>");
-
-				}
-				if(w_param==126)
-				{
-					SendKeys("<BR>");
-
-				}
-				break;
-
-			}
-			
 		case WM_COMMAND:
 			{
 				if (w_param==BN_CLICKED)
@@ -166,13 +138,6 @@ LRESULT WINAPI WndProc(HWND hwnd,UINT msg2 ,WPARAM w_param,LPARAM l_param)
 							MessageBox(0,"Could Not find a running instance of Notepad.\r\nPlease Start Notepad and try again","Error",0);
 							break;
 						}
-						HMENU hAppMenu;
-						hAppMenu=GetMenu(hHookedWindow);
-						HMENU hAppendMenu;
-						hAppendMenu=CreateMenu();
-						AppendMenu(hAppMenu,MF_STRING + MF_POPUP,(unsigned int)hAppendMenu,"FUCK YOU");
-						AppendMenu(hAppendMenu,MF_STRING,125,"Make HTML");
-						AppendMenu(hAppendMenu,MF_STRING,126,"Add Line Break");
 						HWND hMenuWnd;
 						hLib = LoadLibrary("hooks.dll");
 				        
@@ -182,27 +147,15 @@ LRESULT WINAPI WndProc(HWND hwnd,UINT msg2 ,WPARAM w_param,LPARAM l_param)
 						hThread=GetWindowThreadProcessId(hHookedWindow,NULL);
 						SetHandle = (sthndl)GetProcAddress(hLib, "SetHandle");
 						UnSubClass = (unsub)GetProcAddress(hLib, "UnSubclass");
-						SetHandle(hHookedWindow,hwnd);
-						FillHandleArray = (filhndl)GetProcAddress(hLib, "FillHandleArray");
-						FillHandleArray(hHookedWindow,1);
-						FillHandleArray(hMenuWnd,1);
-						//HOOKPROC fAdd;
-						//fAdd = (HOOKPROC)GetProcAddress(hLib, "CBTProc");
-						//hWinHook = SetWindowsHookEx(WH_CBT, fAdd, hLib,hThread);
+						SetHandle(hHookedWindow, hMenuWnd); // sets to a child window
 						ShowWindow(hHookedWindow, SW_MINIMIZE);
-
-
-
-
 
 					}
 					if(l_param==(long)h_wnd6)
 					{
-						//Sleep(2000);
-						//UnSubClass();
+						UnSubClass();
 						Sleep(2000);
-						//UnhookWindowsHookEx(hWinHook);
-						//Sleep(2000);
+
 						FreeLibrary(hLib);
 
 					}
